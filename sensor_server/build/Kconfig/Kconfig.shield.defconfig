@@ -1,0 +1,2 @@
+osource "c:/users/aleja/documents/teleco/tfg_conectividad/sensor_server/boards/shields/*/Kconfig.defconfig"
+osource "C:/ncs/v2.5.0-rc1/nrf/boards/shields/*/Kconfig.defconfig"
