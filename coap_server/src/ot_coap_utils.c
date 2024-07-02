@@ -37,14 +37,14 @@ struct server_context {
 	*/
 	bool provisioning_enabled;
 	provisioning_request_callback_t on_provisioning_request;
-	light_request_callback_t on_light_request;
+	sensor_request_callback_t on_sensor_info_request;
 };
 
 
 static struct server_context srv_context = {
 	.ot = NULL,
 	.provisioning_enabled = false,
-	.on_light_request = NULL,
+	.on_sensor_info_request = NULL,
 	/*
 	*/
 	.on_provisioning_request = NULL,
@@ -154,10 +154,7 @@ static void sensor_request_handler(void *context, otMessage *message,
 	char command[50];
 	ARG_UNUSED(context);
 
-	//-----para latencia-------
-//	gpio_pin_set(led->port,led->pin,1);
-	//-----------------------
-	
+
 	if (otCoapMessageGetType(message) != OT_COAP_TYPE_NON_CONFIRMABLE) {
 		LOG_ERR("ERROR:Sensor handler - Unexpected type of message\n");
 		goto end;
@@ -167,7 +164,7 @@ static void sensor_request_handler(void *context, otMessage *message,
 	otMessageRead(message, otMessageGetOffset(message), command, sizeof(command));
 	//--------para latencia---------
 	if(command[3]=='1'){
-		gpio_pin_set(led->port,led->pin,1);	
+		gpio_pin_set(led->port,led->pin,0);	
 	}
 
 	LOG_INF("Recived: %s\n", command);
@@ -177,11 +174,10 @@ static void sensor_request_handler(void *context, otMessage *message,
 	otIp6AddressToString(&src, buffer, sizeof(buffer));
 	printk ("Dirección envio: %s\n",buffer);
 	//-----prueba latencia----
-	gpio_pin_set(led->port,led->pin,0);
+	gpio_pin_set(led->port,led->pin,1);
 	//------------------------
 
-	//esta linea creo que solo le pasa el comando a on_ligth_request para que decida que led encender
-	srv_context.on_light_request(command);
+	srv_context.on_sensor_info_request(command);
 
 end:
 	return;
@@ -193,9 +189,6 @@ static void   coap_default_handler(void *context, otMessage *message,
 	ARG_UNUSED(context);
 	ARG_UNUSED(message);
 	ARG_UNUSED(message_info);
-	//-----para retransmision------
-	receive_count++;
-	//-----------------------------
 	printk("INFO:Received CoAP message that does not match any request or resource\n");
 }
 
@@ -216,17 +209,14 @@ bool ot_coap_is_provisioning_active(void)
 	return srv_context.provisioning_enabled;
 }
 
-//int ot_coap_init(const struct gpio_dt_spec *ld )
-int ot_coap_init(provisioning_request_callback_t on_provisioning_request,
-		 light_request_callback_t on_light_request, const struct gpio_dt_spec *ld )
+int ot_coap_init(provisioning_request_callback_t on_provisioning_request,const struct gpio_dt_spec *ld )
 {
 	otError error;
 	led=ld;
-/*
-*/
+
 	srv_context.provisioning_enabled = false;
 	srv_context.on_provisioning_request = on_provisioning_request;
-	srv_context.on_light_request = on_light_request;
+	//srv_context.on_sensor_info_request = sensor_info_request;
 
 	srv_context.ot = openthread_get_default_instance();
 	if (!srv_context.ot) {
@@ -235,9 +225,7 @@ int ot_coap_init(provisioning_request_callback_t on_provisioning_request,
 		goto end;
 	}
 
-//Atencion: esto es lo q se haria para provisionar
-/*
-*/
+
 	provisioning_resource.mContext = srv_context.ot;
 	provisioning_resource.mHandler = provisioning_request_handler;
 

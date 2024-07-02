@@ -1,0 +1,17 @@
+{
+    "files.associations": {
+        "timing.h": "c",
+        "timeout_q.h": "c",
+        "device.h": "c",
+        "coap.h": "c",
+        "time.h": "c",
+        "libgen.h": "c",
+        "dk_buttons_and_leds.h": "c",
+        "kernel.h": "c",
+        "timeutil.h": "c",
+        "ast10x0_clock.h": "c",
+        "log.h": "c",
+        "coap_server_client_interface.h": "c",
+        "coap_client_utils.h": "c"
+    }
+}
